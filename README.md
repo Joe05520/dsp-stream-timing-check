@@ -15,3 +15,42 @@ Run with Python 3.10 or newer.
     python3 -m unittest discover -s tests -v
 
 The reference uses the Python standard library. The fixture values and test expectations are authored for this project. [GNU Radio stream tag documentation](https://wiki.gnuradio.org/index.php/Stream_Tags) and [issue #7328](https://github.com/gnuradio/gnuradio/issues/7328) describe the interoperability target and related historical report.
+
+## Run the GNU Radio adapter
+
+Use the Python interpreter that loads your GNU Radio installation and PMT.
+For example, with the distribution package on Ubuntu 24.04:
+
+```sh
+sudo apt install gnuradio
+/usr/bin/python3 -c 'from gnuradio import gr, blocks, filter; import pmt; print(gr.version())'
+/usr/bin/python3 -m stream_timing
+/usr/bin/python3 -m stream_timing --fixture colliding_output_offsets --chunk 8 --chunk 32
+```
+
+On macOS or Linux, a separate conda-forge environment is another installation
+option. Use that environment's Python for the same commands. See [GNU Radio's
+installation guide](https://wiki.gnuradio.org/index.php/InstallingGR).
+
+The adapter sends deterministic synthetic complex I/Q through
+`vector_source_c → rational_resampler_ccf → vector_sink_c`. Interpolation is 2,
+decimation is 3, and the two real FIR taps are both 1. Event IDs are carried as
+PMT symbols under the `event_id` key. Each fixture and chunk setting starts a
+fresh headless flowgraph. `--chunk` caps the resampler's `max_noutput_items`.
+The scheduler picks the individual work-call sizes. The graph-wide cap is at
+least the input vector length to accommodate GNU Radio's tagged source.
+
+The CLI writes JSON with the GNU Radio version, scheduler caps, resampler
+input consumption, output length, and each event's input, expected, and
+observed offsets. The valid output interval is `[0, output_items)`, measured
+at the sink after the unpadded source ends. An expected offset at or beyond the
+end is marked `outside_output`. Its absence is allowed because that output
+item does not exist. An observed event outside the interval fails the check.
+Inside the interval each expected ID must occur exactly once at its predicted
+offset. Distinct IDs may share an offset, and ordering within an offset is
+irrelevant. The report flags missing, unexpected, duplicate, and shifted IDs.
+Exit status is 0 for a passing report, 1 for a comparison failure or empty
+output, and 2 for invalid CLI arguments or a runtime setup failure.
+
+[Development notes](DEVELOPMENT.md) record the tested runtime, version-specific
+source observations, and limitations.
