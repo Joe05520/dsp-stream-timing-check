@@ -45,7 +45,8 @@ fresh headless flowgraph. `--chunk` caps the resampler's `max_noutput_items`.
 The scheduler picks the individual work-call sizes. The graph-wide cap is at
 least the input vector length to accommodate GNU Radio's tagged source.
 
-The CLI writes JSON with the GNU Radio version, scheduler caps, resampler
+The CLI writes JSON to stdout and routes GNU Radio's default logger to stderr.
+The report includes the GNU Radio version, scheduler caps, resampler
 input consumption, output length, and each event's input, expected, and
 observed offsets. The valid output interval is `[0, output_items)`, measured
 at the sink after the unpadded source ends. An expected offset at or beyond the

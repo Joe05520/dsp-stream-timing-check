@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 import unittest
@@ -12,6 +13,7 @@ def run_cli(*args: str) -> subprocess.CompletedProcess[str]:
         capture_output=True,
         text=True,
         timeout=30,
+        env={**os.environ, "GR_CONF_LOG_LOG_FILE": "stdout"},
     )
 
 
@@ -51,7 +53,10 @@ class GNURadioTest(unittest.TestCase):
         args = [arg for chunk in chunks for arg in ("--chunk", str(chunk))]
         result = run_cli(*args)
         self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
-        report = json.loads(result.stdout)
+        try:
+            report = json.loads(result.stdout)
+        except json.JSONDecodeError as error:
+            self.fail(f"Invalid JSON on stdout: {error}; prefix={result.stdout[:500]!r}")
         self.assertTrue(report["passed"])
         self.assertEqual(
             [(run["fixture"], run["resampler_max_noutput_items"]) for run in report["runs"]],

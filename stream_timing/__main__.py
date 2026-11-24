@@ -3,6 +3,7 @@
 import argparse
 from dataclasses import asdict
 import json
+import os
 import sys
 
 from .fixtures import FIXTURES
@@ -70,4 +71,6 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    # GNU Radio may send its default logger to stdout. Reserve stdout for JSON.
+    os.environ["GR_CONF_LOG_LOG_FILE"] = "stderr"
     sys.exit(main())

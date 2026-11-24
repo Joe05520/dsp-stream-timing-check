@@ -92,6 +92,11 @@ fixtures across resampler caps 1, 3, 8, 32 and 128.
   using the GNU Radio interpreter. The default and extended runs must exit 0.
   GitHub Actions runs the same test suite and the default CLI with Ubuntu's
   [GNU Radio package](https://packages.ubuntu.com/noble/gnuradio).
+- The first Ubuntu run with GNU Radio 3.10.9.2 returned success from the CLI
+  but failed to parse stdout as JSON. The CLI now routes the default runtime
+  logger to stderr before loading the bindings. The test exercises this
+  behavior with an inherited stdout logger preference.
+  [GNU Radio 3.10.9.2 logger](https://github.com/gnuradio/gnuradio/blob/v3.10.9.2/gnuradio-runtime/lib/logger.cc#L29-L56).
 
 The release checks use fixed-rate 2/3 downsampling and a finite offline
 source. The original GNU Radio 3.10.8.0 flowgraph linked in issue #7328
