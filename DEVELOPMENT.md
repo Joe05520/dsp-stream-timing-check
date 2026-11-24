@@ -69,3 +69,31 @@ README remain to be tested.
   flowgraph and the proposed patch were outside the day 2 runtime tests.
   [Issue #7328](https://github.com/gnuradio/gnuradio/issues/7328),
   [PR #8270](https://github.com/gnuradio/gnuradio/pull/8270).
+
+## 2026-11-24 release validation
+
+Started at 16:59. Implementation and the local pre-commit regression finished
+at 17:01. Added the six-item finite fixture, CLI regression, and Ubuntu 24.04
+GitHub Actions workflow. The regression uses hard-coded offsets for all three
+fixtures across resampler caps 1, 3, 8, 32 and 128.
+
+- Python 3.12.5 passed 12 standard-library tests with the GNU Radio case
+  skipped. Apple Silicon GNU Radio `g3d33e04` with Python 3.11.7 passed all
+  13 tests.
+- On that GNU Radio build, 20 CLI sweeps (300 fresh flowgraphs) produced
+  byte-identical JSON. The 128-item fixtures each consumed 126 inputs and
+  produced 84 outputs. The six-item fixture consumed four and produced three.
+  The sink saw inputs 0, 1, 2 and 3 as tags at outputs 0, 1, 1 and 2. The
+  two IDs mapped to output 3 were absent, as allowed by the half-open range.
+  The comparator unit test injects an observed tag exactly at the excluded
+  endpoint and verifies that it is flagged.
+- The clean-checkout acceptance commands are the full test suite, the default
+  CLI, and `python -m stream_timing --chunk 1 --chunk 3 --chunk 8 --chunk 32 --chunk 128`
+  using the GNU Radio interpreter. The default and extended runs must exit 0.
+  GitHub Actions runs the same test suite and the default CLI with Ubuntu's
+  [GNU Radio package](https://packages.ubuntu.com/noble/gnuradio).
+
+The release checks use fixed-rate 2/3 downsampling and a finite offline
+source. The original GNU Radio 3.10.8.0 flowgraph linked in issue #7328
+was outside this validation. The test results cover the tag IDs and sink
+offsets under the scheduler caps listed above.

@@ -1,0 +1,28 @@
+name: Stream timing QA
+
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Run standard-library tests
+        run: /usr/bin/python3 -m unittest discover -s tests -v
+      - name: Install GNU Radio
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gnuradio
+          /usr/bin/python3 -c 'from gnuradio import gr, blocks, filter; import pmt; print(gr.version())'
+      - name: Run regression tests and GNU Radio adapter
+        run: |
+          /usr/bin/python3 -m unittest discover -s tests -v
+          timeout 30s /usr/bin/python3 -m stream_timing

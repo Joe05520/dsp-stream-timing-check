@@ -52,4 +52,17 @@ FIXTURES = (
             Event("from-11-b", 11),
         ),
     ),
+    Fixture(
+        name="finite_boundaries",
+        contract=TimingContract(2, 3),
+        input_sample_count=6,
+        input_events=(
+            Event("first", 0),
+            Event("middle-a", 1),
+            Event("middle-b", 2),
+            Event("last-valid", 3),
+            Event("end-a", 4),
+            Event("end-b", 5),
+        ),
+    ),
 )
